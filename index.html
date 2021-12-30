@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>input {
+    border: none;
+    border-radius: 7px;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+</style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js" integrity="sha512-N4kV7GkNv7QR7RX9YF/olywyIgIwNvfEe2nZtfyj73HdjCUkAfOBDbcuJ/cTaN04JKRnw1YG1wnUyNKMsNgg3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="text/javascript">
+let customFont;
+let currentWord;
+let currentWordT = "Testing";
+let currentUserInput = "";
+let inp;
+let wordCounter = 0;
+let words = ['response','outlet','contempt','voucher','plain','acute','berry','division','use','conscience','choose','inquiry','communication','chew','handy','slide','barrier','dialect','use','buy','fast','death','spectrum','color','imaginable','creative','legendary','basketball','moon','galaxy','stars','plants','animals','human'];
+let timer = 0.0;
+let totalTime = 0;
+let highScores = [59.23,456.45,115.56,49.85];
+let gameFinished = false;
+let isPaused = true;
+class Color {
+    constructor(r,g,b,a){
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
+    
+    setRed(r){
+        this.r = r;
+    }
+    setGreen(g){
+        this.g = g;
+    }
+    setBlue(r){
+        this.r = r;
+    }
+    setAlpha(a){
+        this.a = a;
+    }
+    
+    getRed(){
+        return this.r;
+    }
+    getGreen(){
+        return this.g;
+    }
+    getBlue(){
+        return this.b;
+    }
+    getAlpha(){
+        return this.a;
+    }
+}
+
+class Word {
+    constructor(x, y, speed, isDone, color){
+        this.value = '';
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.isDone = isDone;
+        this.color = color;
+    }
+    
+    getPosX(){
+        return this.x;
+    }
+    
+    getPosY(){
+        return this.y;
+    }
+    
+    getIsDone(){
+        return this.isDone;
+    }
+    
+    updatePos(){
+        this.y = this.y + this.speed + random(0.1,1.5);
+        this.x = this.x + 2*sin(this.y*0.01)*random(0.9,1.1);
+    }
+    
+    finishWord(){
+        this.isDone = true;
+    }
+}resetGame
+
+function preload() {
+  //customFont = loadFont('Comfortaa-Regular.ttf');
+}
+
+
+function setup(){
+    createCanvas(windowWidth-20, windowHeight-20);
+    frameRate(60);
+    //textFont(customFont);
+    textSize(20);
+    currentWord = new Word(windowWidth/2,20,3,false, new Color(255,255,255,255));
+    inp = createInput('');
+    inp.position(windowWidth/2-140,windowHeight/2-40);
+    inp.size(200);
+    inp.input(userTyped);
+    inp.elt.focus();
+    highScores.sort((a, b) => a - b);
+    
+
+}
+
+function draw(){
+    background(10);
+    fill(255);
+    text('Typing Test', 10, 20);
+    
+    
+    //draw input box in middle
+    fill(51);
+    rect(windowWidth/2-150,windowHeight/2-20, 300,50);
+    
+    if(!isPaused){
+    
+        
+        //move the current word
+        currentWord.updatePos(); 
+        fill(currentWord.color.getRed(),
+            currentWord.color.getGreen(),
+            currentWord.color.getBlue(),
+            currentWord.color.getAlpha());
+        console.log(currentWord.color.getRed());
+        if(!currentWord.getIsDone()){
+            text(currentWordT,currentWord.getPosX(),currentWord.getPosY());
+        }
+        
+        //What the user has typed
+        fill(255);
+        text(currentUserInput,windowWidth/2-150,windowHeight/2+15);
+        
+        //Counting timer
+        fill(255);
+        text("Seconds Passed:" + timer, 10, 50);
+        
+        
+        
+        text("Total Time: " + totalTime, 10, 100);
+        
+        for(var i = 0; i < highScores.length; i++){
+            text("HighScore #"+i+": " + highScores[i], 10, 150+20*i);
+        }
+        
+        if(gameFinished) {
+            text("You finished in "+totalTime+" seconds!", windowWidth/2-100,200);
+            text("Play Again? Press Any Key", windowWidth/2-100,240);
+            
+            
+        }
+        
+        timer += 1.0 / 60;
+    
+    } else {
+        fill(200);
+        text("Ready to Play? Press Any Key to Start", windowWidth/2-200,240);
+    }
+
+}
+function keyPressed(){
+    if(isPaused && keyIsPressed) {
+        isPaused = false; 
+        inp.elt.focus();
+    }
+    if(gameFinished && keyIsPressed === true){
+        gameFinished = false; 
+        resetGame();
+    }
+    if(keyCode === 13){
+        if(checkCurrentWordMatch()){
+            currentUserInput = "";
+            clearInpVal();
+            currentWord.finishWord();
+            wordCounter++;
+            generateNewWord();
+            if(wordCounter >= words.length){
+                totalTime = timer;
+                highScores.push(totalTime);
+                highScores.sort((a, b) => a - b);
+                gameFinished = true;
+            }
+        }
+    }
+}
+
+function userTyped(){
+    currentUserInput = this.value();
+
+}
+
+function clearInpVal(){
+    inp.value('');
+}
+
+function checkCurrentWordMatch(){
+    if(currentUserInput == currentWordT) return true;
+    else return false;
+}
+
+function generateNewWord(){
+    currentWord.value = words[wordCounter];
+    currentWordT = words[wordCounter];
+    currentWord = new Word(windowWidth/2,20,3,false,new Color(255,255,255,255));
+}
+
+function resetGame(){
+    currentWord = new Word(windowWidth/2,20,3,false, new Color(255,255,255,255));
+    currentWord.value = 'Testing';
+    currentWordT = 'Testing';
+    wordCounter = 0;
+    timer = 0.0;
+    totalTime = 0.0;
+}
+
+/*function saveHighScoresToFile(){
+    let hS = highScores.toString();
+    fs.writeFile('highscores.txt',data, (error) => {
+        if(error) throw err;    
+    })
+}*/
+
+
+
+
+</script>
+</body>
+</html>
